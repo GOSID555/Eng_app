@@ -1,0 +1,220 @@
+/* ───────── Overlay สำหรับ OBS ─────────
+   1rem = 1/120 ของความกว้างจอ → 16px ที่ 1920×1080 และย่อ/ขยายตามขนาด Browser Source อัตโนมัติ */
+html.is-overlay { font-size: calc(100vw / 120); }
+html.is-overlay, html.is-overlay body {
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+}
+html.is-overlay body {
+  font-family: 'Barlow Condensed', 'IBM Plex Sans Thai', 'Arial Narrow', sans-serif;
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+.ov-root {
+  position: fixed;
+  inset: 0;
+  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+.ov-root.ov-hidden { opacity: 0; transform: translateY(-1.5rem); }
+.ov-root.ov-hidden:has(.theme-broadcast) { transform: translateY(1.5rem); }
+
+.ov-score { display: inline-block; font-variant-numeric: tabular-nums; animation: ov-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4); }
+@keyframes ov-pop {
+  0% { transform: scale(1.6); color: #ffd23f; }
+  100% { transform: scale(1); }
+}
+@keyframes ov-blink { 50% { opacity: 0.35; } }
+
+.ov-badge {
+  display: inline-grid;
+  place-items: center;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.ov-logo { object-fit: contain; }
+
+/* ── Theme: bar (บนกลาง) ── */
+.theme-bar {
+  position: absolute;
+  top: 2.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  filter: drop-shadow(0 0.4rem 0.9rem rgba(0, 0, 0, 0.35));
+}
+.bar-title {
+  background: #ffd23f;
+  color: #111;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.2rem 1.1rem;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+.bar-row {
+  display: flex;
+  align-items: stretch;
+  height: 3.6rem;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background: #121418;
+}
+.bar-team {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 8.5rem;
+  justify-content: center;
+  padding: 0 1.2rem;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.bar-logo { width: 2.2rem; height: 2.2rem; object-fit: contain; }
+.bar-score {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0 1.3rem;
+  background: #fff;
+  color: #111;
+  font-size: 2.6rem;
+  font-weight: 800;
+}
+.bar-dash { width: 0.8rem; height: 0.22rem; background: #111; border-radius: 1rem; }
+.bar-clock {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0 1.2rem;
+  background: #121418;
+  border-left: 0.15rem solid rgba(255, 255, 255, 0.08);
+}
+.bar-time { font-size: 2.2rem; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 5.2rem; text-align: center; }
+.bar-period {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #121418;
+  background: #ffd23f;
+  padding: 0.15rem 0.6rem;
+  border-radius: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.bar-clock.low .bar-time { color: #ff5a4f; animation: ov-blink 1s steps(1) infinite; }
+
+/* ── Theme: corner (มุมซ้ายบน) ── */
+.theme-corner {
+  position: absolute;
+  top: 2.4rem;
+  left: 2.4rem;
+  width: 15rem;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background: rgba(18, 20, 24, 0.94);
+  box-shadow: 0 0.5rem 1.2rem rgba(0, 0, 0, 0.35);
+}
+.corner-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.9rem;
+  background: #ffd23f;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.corner-row {
+  display: flex;
+  align-items: center;
+  height: 2.9rem;
+  border-bottom: 0.1rem solid rgba(255, 255, 255, 0.07);
+}
+.corner-swatch { width: 0.5rem; align-self: stretch; }
+.corner-logo { width: 1.8rem; height: 1.8rem; object-fit: contain; margin-left: 0.7rem; }
+.corner-name { flex: 1; padding: 0 0.8rem; font-size: 1.75rem; font-weight: 700; letter-spacing: 0.05em; }
+.corner-row .ov-score {
+  width: 3.4rem;
+  text-align: center;
+  font-size: 2.1rem;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.06);
+  align-self: stretch;
+  line-height: 2.9rem;
+}
+.corner-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.3rem 0.9rem;
+  background: #fff;
+  color: #111;
+}
+.corner-time { font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.corner-period { font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #555; }
+.corner-foot.low .corner-time { color: #e0302a; animation: ov-blink 1s steps(1) infinite; }
+
+/* ── Theme: broadcast (การ์ดใหญ่ด้านล่าง) ── */
+.theme-broadcast {
+  position: absolute;
+  bottom: 4rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  filter: drop-shadow(0 0.6rem 1.4rem rgba(0, 0, 0, 0.4));
+}
+.bc-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: #121418;
+  padding: 0.35rem 1.6rem;
+  border-radius: 0.6rem 0.6rem 0 0;
+}
+.bc-card { display: flex; align-items: stretch; height: 6.2rem; border-radius: 0.8rem; overflow: hidden; }
+.bc-team {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  width: 31rem;
+  padding: 0 1.4rem;
+  background: #fff;
+  color: #111;
+  position: relative;
+}
+.bc-team.home { border-left: 0.7rem solid var(--team); }
+.bc-team.away { border-right: 0.7rem solid var(--team); justify-content: flex-end; }
+.bc-team .ov-badge, .bc-team .ov-logo { width: 3.8rem; height: 3.8rem; border-radius: 50%; font-size: 1.3rem; flex-shrink: 0; }
+.bc-name {
+  flex: 1;
+  font-size: 2.3rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bc-team.away .bc-name { text-align: right; }
+.bc-team .ov-score { font-size: 4.2rem; font-weight: 800; min-width: 3.5rem; text-align: center; }
+.bc-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 10rem;
+  background: #121418;
+}
+.bc-time, .bc-vs { font-size: 2.6rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+.bc-period { margin-top: 0.4rem; font-size: 1rem; font-weight: 700; color: #ffd23f; text-transform: uppercase; letter-spacing: 0.1em; }
+.bc-mid.low .bc-time { color: #ff5a4f; animation: ov-blink 1s steps(1) infinite; }

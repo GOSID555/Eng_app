@@ -1,75 +1,71 @@
-# 🎬 English Talk Studio — ฝึกบทสนทนาภาษาอังกฤษ ม.1–3
+# Scoreboard Studio
 
-เว็บแอป React (Vite) สำหรับฝึก conversation แบบ "ดูหนังแล้วเล่นตาม": ตัวละครพูดมีเสียง มีซับไตเติล EN/TH และผู้เรียนเลือกคำตอบ (กดฟังเสียงแต่ละตัวเลือกได้) — ดีไซน์โทนพาสเทล การ์ดมน ตัวละครวาดด้วย SVG ปากขยับตามเสียงเพื่อให้เรื่องดำเนินต่อ
+ระบบป้ายคะแนนสำหรับไลฟ์สตรีม ใช้กับ **OBS Studio** ได้ทันที
+หน้าควบคุมเปิดบนคอมหรือมือถือ แล้ว overlay บน OBS จะอัปเดตแบบเรียลไทม์ (WebSocket)
 
-## วิธีรัน
+- ควบคุมคะแนน 2 ทีม (+1/+2/+3/+5, แก้ตัวเลขตรง ๆ ได้)
+- นาฬิกานับขึ้น / นับถอยหลัง (หยุดเองเมื่อหมดเวลา), ปรับ ±1s/10s/1m, ตั้งเวลาได้
+- ชื่อทีม ชื่อย่อ สีทีม โลโก้ (ลิงก์รูป) ชื่อรายการ และช่วงการแข่งขัน (1st Half, Q1, Set 1 …)
+- Overlay 3 แบบ: **Top Bar**, **Corner**, **Broadcast** พร้อมซ่อน/แสดงแบบมีแอนิเมชัน
+- ย้อนกลับ (Undo), สลับฝั่ง, เริ่มแมตช์ใหม่
+- ควบคุมจากมือถือที่ต่อ Wi-Fi เดียวกันได้ และข้อมูลถูกบันทึกไว้ (`data/state.json`) ปิดเปิดใหม่ไม่หาย
+
+## เริ่มใช้งาน
+
+ต้องมี [Node.js](https://nodejs.org) 18 ขึ้นไป
 
 ```bash
 npm install
-npm run dev
+npm start
 ```
 
-เปิด http://localhost:5173 (แนะนำ Chrome / Edge / Safari เพราะรองรับเสียงพูด)
+จะได้ลิงก์:
 
-## โครงสร้างโปรเจกต์
+| หน้า | ลิงก์ |
+|---|---|
+| หน้าควบคุม | http://localhost:3000/control |
+| Overlay สำหรับ OBS | http://localhost:3000/overlay |
+| ควบคุมจากมือถือ | http://IP-ของเครื่อง:3000/control (แสดงในหน้าควบคุม) |
+
+> ตอนพัฒนาโค้ดใช้ `npm run dev` (พอร์ต 5173, แก้โค้ดแล้วรีเฟรชอัตโนมัติ)
+
+## เชื่อมกับ OBS
+
+1. OBS → **Sources** → **+** → **Browser**
+2. URL: `http://localhost:3000/overlay`
+3. Width `1920` · Height `1080` (ขนาดอื่นได้ overlay จะย่อ/ขยายตามสัดส่วนเอง)
+4. กด OK — พื้นหลังโปร่งใสอยู่แล้ว ไม่ต้องใส่ Custom CSS
+
+ถ้า OBS อยู่คนละเครื่องกับที่รัน server ให้ใช้ IP ของเครื่อง server แทน `localhost`
+
+## คีย์ลัด (หน้าควบคุม)
+
+| ปุ่ม | การทำงาน |
+|---|---|
+| `Q` / `A` | ทีมเหย้า +1 / −1 |
+| `P` / `L` | ทีมเยือน +1 / −1 |
+| `Space` | เริ่ม / หยุดเวลา |
+| `H` | ซ่อน / แสดง overlay |
+| `Ctrl/⌘ + Z` | ย้อนกลับ |
+
+## โครงสร้าง
 
 ```
+server/
+├── store.js     state ของแมตช์ + การกระทำทั้งหมด (reducer), undo, บันทึกไฟล์, หยุดนาฬิกาเมื่อหมดเวลา
+├── socket.js    WebSocket /ws กระจาย state ให้ทุกหน้าจอ
+├── info.js      /api/info (IP ในวง LAN)
+└── index.js     server โหมดใช้งานจริง (เสิร์ฟ dist + WebSocket พอร์ตเดียว)
 src/
-├── main.jsx                  จุดเริ่มต้น
-├── App.jsx                   สลับหน้า home → play → result, เก็บ settings/progress
-├── data/
-│   └── lessons.js            ⭐ เนื้อหาบทเรียนทั้งหมด (แก้/เพิ่มบทเรียนที่นี่)
-├── hooks/
-│   └── useSpeech.js          อ่านออกเสียง (Web Speech API) เลือกเสียงชาย/หญิงตามตัวละคร
-├── utils/
-│   ├── text.js               แทนชื่อ {name}, สุ่มลำดับตัวเลือก
-│   └── storage.js            บันทึกดาว/คะแนน/การตั้งค่าใน localStorage
-├── components/
-│   ├── Home.jsx              หน้าหลัก เลือกระดับชั้น ม.1/ม.2/ม.3
-│   ├── LessonCard.jsx        การ์ดแต่ละตอน
-│   ├── SettingsPanel.jsx     ชื่อ, เสียงผู้เรียน, ความเร็ว, คำแปล, เล่นอัตโนมัติ
-│   ├── ConversationPlayer.jsx ⭐ ตัวควบคุมเกม (ลำดับบท, เสียง, ตอบถูก/ผิด, คะแนน)
-│   ├── Stage.jsx             ฉากแบบหนัง + ซับไตเติล
-│   ├── Character.jsx         ตัวละคร (ขยับเมื่อพูด)
-│   ├── ChoicePanel.jsx       ตัวเลือกคำตอบ + ปุ่มฟัง + feedback
-│   ├── Transcript.jsx        ประวัติบทสนทนาแบบแชต กดฟังซ้ำได้
-│   ├── ResultScreen.jsx      สรุปดาว ทบทวนข้อผิด และคำศัพท์
-│   └── Stars.jsx
-└── styles/index.css
+├── main.jsx                  /overlay → Overlay, อื่น ๆ → หน้าควบคุม
+├── hooks/useScoreboard.js    เชื่อม WebSocket + ต่อใหม่อัตโนมัติ + ซิงก์เวลากับ server
+├── hooks/useClockValue.js    คำนวณเวลาที่ต้องแสดงทุก 100ms
+├── components/control/       หน้าควบคุม (TeamCard, ClockCard, MatchCard, OverlayCard)
+├── components/overlay/       Overlay + ธีม BarTheme / CornerTheme / BroadcastTheme
+└── styles/                   control.css, overlay.css
+vite.config.js                ตอน dev ฝัง WebSocket server ไว้ใน Vite
 ```
 
-## บทเรียนที่มี
+นาฬิกาเก็บเป็น "เวลาที่เริ่ม" บน server ทุกหน้าจอคำนวณเองจากเวลานั้น จึงตรงกันทุกเครื่องและไม่ค้างแม้เน็ตกระตุก
 
-| ชั้น | ตอน | หัวข้อ |
-|---|---|---|
-| ม.1 | Hello! (Warm-up) | ทักทายง่าย ๆ 3 ประโยค |
-| ม.1 | Nice to Meet You! | แนะนำตัว |
-| ม.1 | Can I Borrow Your Pen? | ภาษาในห้องเรียน |
-| ม.2 | At the Restaurant | สั่งอาหาร |
-| ม.2 | Excuse Me, Where Is...? | บอกทาง |
-| ม.3 | Shopping for Clothes | ซื้อเสื้อผ้า |
-| ม.3 | Weekend Plans | ชวนเพื่อน / นัดหมาย |
-
-## เพิ่มบทเรียนใหม่
-
-เพิ่ม object ใน `LESSONS` ของ `src/data/lessons.js`:
-
-```js
-{
-  id: 'm2-new', grade: 2, title: '...', titleTh: '...', goal: '...',
-  scene: { place: 'Park', placeTh: 'สวน', icon: '🌳', bg: 'linear-gradient(...)' },
-  characters: { lily: { name: 'Lily', avatar: '👧', voice: { gender: 'female', pitch: 1.2 } } },
-  vocab: [{ word: '...', meaning: '...' }],
-  steps: [
-    { type: 'line', speaker: 'lily', text: 'Hi {name}!', th: 'สวัสดี{name}!' },
-    { type: 'choice', prompt: 'ทักทายกลับ', options: [
-      { text: 'Hi, Lily!', th: 'สวัสดีลิลลี่', correct: true, feedback: 'ถูกต้อง!' },
-      { text: 'Bye, Lily!', th: 'ลาก่อน', feedback: 'นี่คือการบอกลา' },
-    ]},
-  ],
-}
-```
-
-- `{name}` จะถูกแทนด้วยชื่อผู้เรียนที่ตั้งไว้
-- ตัวละคร `you` (ผู้เรียน) สร้างให้อัตโนมัติ
-- คะแนน = สัดส่วนข้อที่ตอบถูกในครั้งแรก (≥85% = 3 ดาว, ≥60% = 2 ดาว)
+> หมายเหตุ: server ไม่มีระบบล็อกอิน ใครที่อยู่ในวง Wi-Fi เดียวกันและรู้ลิงก์จะควบคุมได้ ใช้ในเครือข่ายที่ไว้ใจได้
